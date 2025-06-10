@@ -7,19 +7,12 @@ from esphome.components import pipsolar as parent
 DEPENDENCIES = ['uart']
 AUTO_LOAD = ['sensor', 'text_sensor', 'binary_sensor', 'switch', 'output', 'select']
 
-mypipsolar_ns = cg.esphome_ns.namespace('mypipsolar')
+mypipsolar_ns = cg.esphome_ns.namespace('pipsolar')  # те саме namespace!
 MyPipSolar = mypipsolar_ns.class_('MyPipSolar', parent.PipsolarComponent)
 
-# Відокремлюємо базову схему від оригіналу, щоб зробити extend
-BASE_SCHEMA = cv.Schema({
-    cv.GenerateID(): cv.declare_id(parent.PipsolarComponent),
-}).extend(uart.UART_DEVICE_SCHEMA)
-
-# Створюємо фінальну схему, де викликаємо cv.All без extend на parent.CONFIG_SCHEMA
-CONFIG_SCHEMA = cv.All(
-    BASE_SCHEMA,
-    cv.polling_component_schema('1s'),
-)
+CONFIG_SCHEMA = parent.CONFIG_SCHEMA.extend({
+    # сюди можна додати свої параметри, якщо потрібно, поки лишаємо порожнім
+})
 
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
