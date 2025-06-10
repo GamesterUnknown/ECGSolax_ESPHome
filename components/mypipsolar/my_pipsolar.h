@@ -11,7 +11,8 @@ class MyPipSolar : public PipSolar {
  public:
   void setup() override;
   void send_set_datetime();
+ static const esphome::yaml::Schema &get_config_schema();
 };
-
+extern const esphome::yaml::Schema CONFIG_SCHEMA;
 }  // namespace pipsolar
 }  // namespace esphome
