@@ -1,10 +1,9 @@
 #include "my_pipsolar.h"
 #include "esphome/core/log.h"
-#include "esphome/core/yaml.h"  // Додано для yaml::Schema
 #include "esphome/components/time/real_time_clock.h"
 
 namespace esphome {
-namespace mypipsolar {
+namespace pipsolar {
 
 static const char *const TAG = "my_pipsolar";
 
@@ -32,12 +31,6 @@ void MyPipSolar::send_set_datetime() {
 
   this->write_bytes(std::vector<uint8_t>(command.begin(), command.end()));
 }
-
-const esphome::yaml::Schema &MyPipSolar::get_config_schema() {
-  return pipsolar::CONFIG_SCHEMA;
-}
-
-const esphome::yaml::Schema CONFIG_SCHEMA = pipsolar::CONFIG_SCHEMA;
 
 }  // namespace pipsolar
 }  // namespace esphome
