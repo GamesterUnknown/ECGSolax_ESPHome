@@ -5,14 +5,13 @@
 #include "esphome/components/time/real_time_clock.h"
 
 namespace esphome {
-namespace mypipsolar {
+namespace pipsolar {  // namespace повинен співпадати з оригінальним
 
-class MyPipSolar : public pipsolar::PipSolar {
+class MyPipSolar : public PipSolar {
  public:
   void setup() override;
   void send_set_datetime();
 };
 
-}  // namespace mypipsolar
+}  // namespace pipsolar
 }  // namespace esphome
-
