@@ -34,5 +34,5 @@ void MyPipSolar::send_set_datetime() {
 }  // namespace pipsolar
 }  // namespace esphome
 
-// 🔁 Реєструємо під тим самим ім’ям "pipsolar"
-REGISTER_COMPONENT(esphome::pipsolar::MyPipSolar, pipsolar);
+REGISTER_COMPONENT(esphome::pipsolar::MyPipSolar, mypipsolar);
+
