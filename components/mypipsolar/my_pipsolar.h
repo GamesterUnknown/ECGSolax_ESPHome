@@ -6,7 +6,7 @@
 #include "esphome/core/yaml.h"  // Для esphome::yaml::Schema
 
 namespace esphome {
-namespace pipsolar {
+namespace mypipsolar {
 
 class MyPipSolar : public PipSolar {
  public:
