@@ -2,19 +2,23 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import uart
 from esphome.const import CONF_ID
-import esphome.components.pipsolar as parent
+from esphome.components import pipsolar as parent
 
-DEPENDENCIES = ["uart"]
-AUTO_LOAD = ["sensor", "switch", "binary_sensor"]  # Якщо потрібно
-CODEOWNERS = ["@твійGitHub"]
+DEPENDENCIES = ['uart']
+AUTO_LOAD = ['sensor', 'text_sensor', 'binary_sensor', 'switch', 'output', 'select']
 
-mypipsolar_ns = cg.esphome_ns.namespace("pipsolar")
-MyPipSolar = mypipsolar_ns.class_("MyPipSolar", parent.PipsolarComponent)
+mypipsolar_ns = cg.esphome_ns.namespace('mypipsolar')
+MyPipSolar = mypipsolar_ns.class_('MyPipSolar', parent.PipsolarComponent)
 
-CONFIG_SCHEMA = parent.CONFIG_SCHEMA.extend(
-    {
-        # Тут можна додати свої параметри, або просто використати батьківський
-    }
+# Відокремлюємо базову схему від оригіналу, щоб зробити extend
+BASE_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.declare_id(parent.PipsolarComponent),
+}).extend(uart.UART_DEVICE_SCHEMA)
+
+# Створюємо фінальну схему, де викликаємо cv.All без extend на parent.CONFIG_SCHEMA
+CONFIG_SCHEMA = cv.All(
+    BASE_SCHEMA,
+    cv.polling_component_schema('1s'),
 )
 
 def to_code(config):
