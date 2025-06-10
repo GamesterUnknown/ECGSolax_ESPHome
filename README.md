@@ -20,6 +20,21 @@ The original monitoring stick looks like use ESP8266 and MAX3232, and probably c
 
 # RJ45 connector
 
+```
+               RS232                     UART-TTL
+┌──────────┐              ┌──────────┐                ┌─────────┐
+│          │              │          │<----- RX ----->│         │
+│          │<---- TX ---->│  RS232   │<----- TX ----->│ ESP32   │
+│   ECG    │<---- RX ---->│  to TTL  │<----- GND ---->│         │
+│  Solax   │              │  module  │<-- 3.3V VCC -->│         │
+│          │<---- GND --->│          │       │        │         │
+│ Inverter │       │      └──────────┘       │        └─────────┘
+│          │       │      ┌──────────┐       │
+│          │       │----->│   DC-DC  │       │
+│          │<- VCC 12V -->│          │-3.3V->│
+└──────────┘              └──────────┘
+```
+
 | Pin     | Purpose      | MAX3232 pin       | Color T-568B |
 | :-----: | :----------- | :---------------- | :------------|
 |    1    |              |                   |              |
