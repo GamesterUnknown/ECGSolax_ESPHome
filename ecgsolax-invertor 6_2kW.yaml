@@ -1,0 +1,509 @@
+substitutions:
+ # device_name: "ecgsolax-invertor"
+ # friendly_name: ECGSolax Invertor
+ # node_name: "ECGSolax Invertor"
+
+
+  device_name: "my-inverter"
+  friendly_name: My Inverter
+  node_name: "My Inverter"
+  node_id: ECGSolax_Inverter
+  inverter_tx_pin: GPIO17
+  #GPIO5
+  inverter_rx_pin: GPIO16
+  #GPIO4
+  inverter_voltage_offset: "0"
+  pzem_tx_pin: GPIO1
+  pzem_rx_pin: GPIO3
+  pzem_voltage_offset: "0"
+  pzem_current_offset: "0"
+  update_interval: 10s # Minimum 10s recommended to avoid duplicate command errors
+  select_skip_updates: "6"
+  read_skip_updates: "6"
+  pzem_update_interval: 10s # Needs to be 1/5 of update interval because of smoothing filter on pzem readings
+
+esphome: 
+  name: "${device_name}"
+  friendly_name: "${node_name}"
+  comment: "Monitor and control a solar inverter"
+  build_path: /config/esphome/build/${node_id}
+  #includes:
+  #  - "helpers"
+  project:
+    name: "esphome.ECGSolax_Invertor"
+    version: 1.0.0
+
+#external_components:
+# - source: github://syssi/esphome-pipsolar@pip8048
+#   refresh: 0s
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "EuIuqv0Dwsv5GEe6j6q8PgFq4ZYC5CElcQN3gOTPYjI="
+#    key: "Lt+oELJb3xYYhDkxxj4LW45rIlv20qS63OTYFoTVPsg="
+
+ota:
+ - platform: esphome
+   password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "My-Inverter Fallback Hotspot"
+    password: !secret ap_password
+
+captive_portal:
+
+packages:
+  # You can replace next 2 lines with your common configs for all devices
+ # common_system: !include includes/common_system.yaml
+  common_sensors: !include includes/common_sensors.yaml
+
+
+#For debug:
+#debug:
+#  update_interval: 10s
+
+#sensor:
+#  - platform: debug
+#    free:
+#      name: "Heap Free"
+
+logger:
+  id: uart_logger
+  baud_rate: 0
+  level: DEBUG #VERBOSE
+  # logs:
+  #   component: ERROR # Fix for issue #4717 "Component xxxxxx took a long time for an operation"
+
+time:
+  - platform: homeassistant
+    id: hass_time
+
+web_server:
+ port: 80
+ local: true
+#  ota: false
+
+  
+uart:
+  - id: uart_pzem
+    baud_rate: 9600
+    tx_pin: ${pzem_tx_pin}
+    rx_pin: ${pzem_rx_pin}
+    debug:
+     direction: BOTH
+     dummy_receiver: false
+     after:
+      delimiter: "\n"
+     sequence:
+      - lambda: UARTDebug::log_string(direction, bytes);
+
+  - id: uart_inverter
+    baud_rate: 2400
+    tx_pin: ${inverter_tx_pin}
+    rx_pin: ${inverter_rx_pin}
+    debug:
+     direction: BOTH
+     dummy_receiver: false
+     after:
+      delimiter: "\n"
+     sequence:
+      - lambda: UARTDebug::log_string(direction, bytes);
+ 
+
+
+modbus:
+  - id: modbus_pzem
+    uart_id: uart_pzem
+    send_wait_time: 250ms
+
+pipsolar:
+  uart_id: uart_inverter
+  id: inverter0
+
+
+modbus_controller: 
+  - id: pzem
+    # The current device address.
+    address: 0x02
+    # The special address 0xF8 is a broadcast address accepted by any pzem device,
+    # so if you use this address, make sure there is only one pzem device connected
+    # to the uart bus.
+    # address: 0xF8
+    modbus_id: modbus_pzem
+    command_throttle: 0ms
+    setup_priority: -10
+    offline_skip_updates: 100
+    update_interval: ${pzem_update_interval}
+
+sensor:
+  - platform: pzemac
+    modbus_id: modbus_pzem
+    voltage:
+      name: "Grid Voltage PZEM"
+      id: pzem_grid_voltage
+      #internal: true
+      #filters:
+      #  - &mafilter quantile:
+      #      window_size: 5
+      #      send_every: 1
+      #      send_first_at: 1
+      #      quantile: .9
+      #  - offset: ${pzem_voltage_offset}
+    current:
+      name: "Grid Current PZEM"
+      id: pzem_grid_current
+      #filters:
+      #  - *mafilter
+      #  - offset: ${pzem_current_offset}
+    power:
+      name: "Grid Power PZEM"
+      id: pzem_grid_power
+      #filters:
+      #  - *mafilter
+    power_factor:
+      name: "Grid Power Factor PZEM"
+      id: pzem_grid_power_factor
+      #filters:
+      #  - *mafilter
+    energy:
+      name: "Grid Energy PZEM"
+      id: pzem_grid_energy
+      #filters:
+      #  - *mafilter
+
+  - platform: template
+    name: "Grid Power VA PZEM"
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: ${pzem_update_interval}
+    lambda: |-
+      return id(pzem_grid_current).state * id(pzem_grid_voltage).state;
+
+  - platform: template
+    name: "Grid Power VA*PF PZEM"
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: ${pzem_update_interval}
+    lambda: |-
+      return id(pzem_grid_current).state * id(pzem_grid_voltage).state * id(pzem_grid_power_factor).state;
+
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    # QPIRI
+#    grid_rating_voltage:
+#      name: "${node_name} grid_rating_voltage"
+#    grid_rating_current:
+#      name: "${node_name} grid_rating_current"
+    ac_output_rating_voltage:
+      name: "Target Output Voltage"
+    ac_output_rating_frequency:
+      name: "Target Output Frequency"
+#    ac_output_rating_current:
+#      name: "${node_name} ac_output_rating_current"
+#    ac_output_rating_apparent_power:
+#      name: "${node_name} ac_output_rating_apparent_power"
+#    ac_output_rating_active_power:
+#      name: "${node_name} ac_output_rating_active_power"
+#    battery_rating_voltage:
+#      name: "${node_name} battery_rating_voltage"
+    battery_recharge_voltage:
+      name: "Back To Utility Source Voltage"
+      entity_category: diagnostic
+    battery_under_voltage:
+      name: "Low CutOff Voltage"
+      entity_category: diagnostic
+    battery_bulk_voltage:
+      name: "Bulk Charging Voltage"
+      entity_category: diagnostic
+    battery_float_voltage:
+      name: "Floating Charging Voltage"
+      entity_category: diagnostic
+    battery_type:
+      name: "${node_name} battery_type"
+      entity_category: diagnostic
+    current_max_ac_charging_current:
+      name: "Max Utility Charging Current"
+      entity_category: diagnostic
+    current_max_charging_current:
+      name: "Max Total Charging Current"
+      entity_category: diagnostic
+    input_voltage_range:
+      name: "AC Input Voltage Range"
+      entity_category: diagnostic
+    output_source_priority:
+      name: "Output Source Priority"
+      entity_category: diagnostic
+    charger_source_priority:
+      name: "Charger Source Priority"
+      entity_category: diagnostic
+    parallel_max_num:
+      name: "${node_name} parallel_max_num"
+      entity_category: diagnostic
+    machine_type:
+      name: "${node_name} machine_type"
+      entity_category: diagnostic
+    topology:
+      name: "${node_name} topology"
+      entity_category: diagnostic
+    output_mode:
+      name: "${node_name} output_mode"
+      entity_category: diagnostic
+    battery_redischarge_voltage:
+      name: "Back To Battery Source Voltage"
+      entity_category: diagnostic
+    pv_ok_condition_for_parallel:
+      name: "${node_name} pv_ok_condition_for_parallel"
+      entity_category: diagnostic
+    pv_power_balance:
+      name: "${node_name} pv_power_balance"
+      entity_category: diagnostic
+
+    # QPIGS
+    grid_voltage:
+      name: "Grid Voltage"
+      device_class: voltage
+      state_class: measurement
+    grid_frequency:
+      name: "Grid Frequency"
+      device_class: frequency
+      state_class: measurement
+    ac_output_voltage:
+      name: "Load Voltage"
+      device_class: voltage
+      state_class: measurement
+      id: load_voltage
+    ac_output_frequency:
+      name: "Load Frequency"
+      device_class: frequency
+      state_class: measurement
+    ac_output_apparent_power:
+      name: "Load Power VA"
+      id: load_Power_VA
+      device_class: power
+      state_class: measurement
+    ac_output_active_power:
+      name: "Load Power"
+      id: load_power
+      device_class: power
+      state_class: measurement
+    output_load_percent:
+      name: "Load Percent"
+      device_class: power_factor
+      state_class: measurement
+    bus_voltage:
+      name: "Bus Voltage"
+      device_class: voltage
+      state_class: measurement
+    battery_voltage:
+      id: battery_voltage
+      name: "Battery Voltage"
+      device_class: voltage
+      state_class: measurement
+    battery_charging_current:
+      id: battery_charge_current
+      name: "Battery Charge Current" 
+      device_class: current
+      state_class: measurement
+    battery_capacity_percent:
+      name: "Battery SoC"
+      device_class: battery
+      state_class: measurement
+    inverter_heat_sink_temperature:
+      name: "Temperature"
+    pv_input_current_for_battery:
+      name: "PV Current"
+      device_class: current
+      state_class: measurement
+    pv_input_voltage:
+      name: "PV Voltage"
+      device_class: voltage
+      state_class: measurement
+    battery_voltage_scc:
+      name: "!Battery Voltage SCC"
+    battery_discharge_current:
+      name: "Battery Discharge Current"
+      device_class: current
+      state_class: measurement
+      id: battery_discharge_current
+    battery_voltage_offset_for_fans_on:
+      name: "!Battery Voltage offset for fans on"
+#    eeprom_version:
+#      name: "!eeprom_version"
+    pv_charging_power:
+      name: "PV Power"
+      device_class: power
+      state_class: measurement
+
+  - platform: template
+    name: "Battery Current"
+    id: battery_current
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: ${update_interval}
+    lambda: |-
+      return id(battery_charge_current).state - id(battery_discharge_current).state;
+
+  - platform: template
+    name: "Battery Power"
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: ${update_interval}
+    lambda: |-
+      return id(battery_current).state * id(battery_voltage).state;
+
+  - platform: template
+    name: "Load Current"
+    id: load_current
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 3
+    update_interval: ${update_interval}
+    lambda: |-
+      if (id(load_voltage).state == 0) {
+        return 0;
+      }
+      return id(load_Power_VA).state / id(load_voltage).state;
+
+
+  - platform: template
+    name: "Load Power Factor"
+    id: load_power_factor
+    device_class: power_factor
+    state_class: measurement
+    accuracy_decimals: 2
+    update_interval: ${update_interval}
+    lambda: |-
+      if (id(load_power).state == 0) {
+        return 0;
+      }
+      return id(load_power).state / id(load_Power_VA).state;
+
+text_sensor:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    device_mode:
+      name: "Device Mode"
+      filters:
+        map:
+          - P -> Power on mode
+          - S -> Standby mode
+          - L -> Line mode
+          - B -> Battery mode
+          - F -> Fault mode
+          - D -> Shutdown mode
+#    last_qpigs:
+#      name: "${node_name} last_qpigs"
+#    last_qpiri:
+#      name: "${node_name} last_qpiri"
+#    last_qmod:
+#      name: "${node_name} last_qmod"
+#    last_qflag:
+#      name: "${node_name} last_qflag"
+
+binary_sensor:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    add_sbu_priority_version:
+      name: "!add_sbu_priority_version"
+    configuration_status:
+      name: "!Configuration Status"
+#    scc_firmware_version:
+#      name: "${node_name} scc_firmware_version"
+    load_status:
+      name: "Load Enabled"
+      entity_category: diagnostic
+    battery_voltage_to_steady_while_charging:
+      name: "!battery_voltage_to_steady_while_charging"
+      entity_category: diagnostic
+    charging_status:
+      name: "Charger Status"
+      entity_category: diagnostic
+    scc_charging_status:
+      name: "!SCC Charging Status"
+      entity_category: diagnostic
+    ac_charging_status:
+      name: "AC Charging Status"
+      entity_category: diagnostic
+    charging_to_floating_mode:
+      name: "Charging in Floating Mode"
+      entity_category: diagnostic
+    switch_on:
+      name: "Switch On"
+      entity_category: diagnostic
+    dustproof_installed:
+      name: "!dustproof_installed"
+      entity_category: diagnostic
+    silence_buzzer_open_buzzer:
+      name: "Alarm"
+      entity_category: diagnostic
+    overload_bypass_function:
+      name: "Overload Bypass"
+      entity_category: diagnostic
+    lcd_escape_to_default:
+      name: "Return To Default Screen"
+      entity_category: diagnostic
+    overload_restart_function:
+      name: "Restart On Overload"
+      entity_category: diagnostic
+    over_temperature_restart_function:
+      name: "Restart On Overheat"
+      entity_category: diagnostic
+    backlight_on:
+      name: "Backlight"
+      entity_category: diagnostic
+    alarm_on_when_primary_source_interrupt:
+      name: "Beep On Primary Source Fail"
+      entity_category: diagnostic
+    fault_code_record:
+      name: "Record Fault Code"
+      entity_category: diagnostic
+
+switch:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    output_source_priority_utility:
+      name: "${node_name} output_source_priority_utility"
+      entity_category: config
+    output_source_priority_solar:
+      name: "${node_name} output_source_priority_solar"
+      entity_category: config
+    output_source_priority_battery:
+      name: "${node_name} output_source_priority_battery"
+      entity_category: config
+    input_voltage_range:
+      name: "${node_name} input_voltage_range"
+      entity_category: config
+    pv_ok_condition_for_parallel:
+      name: "${node_name} pv_ok_condition_for_parallel"
+      entity_category: config
+    pv_power_balance:
+      name: "${node_name} pv_power_balance"
+      entity_category: config
+
+output:
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    battery_recharge_voltage:
+      id: inverter0_battery_recharge_voltage
+      possible_values: [44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0]
