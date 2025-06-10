@@ -30,7 +30,11 @@ void MyPipSolar::send_set_datetime() {
 
   this->write_bytes(std::vector<uint8_t>(command.begin(), command.end()));
 }
-static const auto CONFIG_SCHEMA = pipsolar::CONFIG_SCHEMA;
+const esphome::yaml::Schema CONFIG_SCHEMA = pipsolar::CONFIG_SCHEMA;
+
+const esphome::yaml::Schema &MyPipSolar::get_config_schema() {
+  return CONFIG_SCHEMA;
+}
 
 }  // namespace mypipsolar
 }  // namespace esphome
