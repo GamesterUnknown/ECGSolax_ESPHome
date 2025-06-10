@@ -3,7 +3,7 @@
 #include "esphome/components/time/real_time_clock.h"
 
 namespace esphome {
-namespace pipsolar {
+namespace mypipsolar {
 
 static const char *const TAG = "my_pipsolar";
 
@@ -32,7 +32,7 @@ void MyPipSolar::send_set_datetime() {
   this->write_bytes(std::vector<uint8_t>(command.begin(), command.end()));
 }
 
-}  // namespace pipsolar
+}  // namespace mypipsolar
 }  // namespace esphome
 
 REGISTER_COMPONENT(esphome::pipsolar::MyPipSolar, mypipsolar);
