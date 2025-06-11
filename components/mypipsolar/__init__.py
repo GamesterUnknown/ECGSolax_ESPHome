@@ -4,7 +4,7 @@ from esphome.components import pipsolar, uart, time as time_component
 from esphome.const import CONF_ID
 from esphome.components.pipsolar import PipsolarComponent
 
-DEPENDENCIES = ["uart", "pipsolar"]
+DEPENDENCIES = ["uart"]
 CODEOWNERS = ["@GamesterUnknown"]
 AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
 MULTI_CONF = True
