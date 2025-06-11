@@ -6,7 +6,7 @@ from esphome.components.pipsolar import PipsolarComponent
 
 DEPENDENCIES = ["uart", "pipsolar"]
 CODEOWNERS = ["@GamesterUnknown"]
-AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
+AUTO_LOAD = ["pipsolar", "binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
 MULTI_CONF = True
 
 CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
