@@ -8,7 +8,7 @@
 namespace esphome {
 namespace mypipsolar {
 
-class MyPipSolar : public pipsolar::PipsolarComponent {
+class MyPipSolar : public pipsolar::Pipsolar {
  public:
   void set_time_component(time::RealTimeClock *time) { this->time_ = time; }
 
@@ -19,7 +19,7 @@ class MyPipSolar : public pipsolar::PipsolarComponent {
   time::RealTimeClock *time_{nullptr};
   bool time_synchronized_{false};
 
-  void sync_time_if_needed();
+  void sync_time();
 };
 
 }  // namespace mypipsolar
