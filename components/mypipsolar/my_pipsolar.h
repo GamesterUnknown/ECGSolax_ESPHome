@@ -1,17 +1,25 @@
 #pragma once
 
-#include "pipsolar.h"
-#include "esphome/core/component.h"
+#include "esphome.h"
 #include "esphome/components/time/real_time_clock.h"
 
-namespace esphome {
-namespace pipsolar {  // namespace повинен співпадати з оригінальним
 
-class MyPipSolar : public PipSolar {
+namespace esphome {
+namespace mypipsolar {
+
+class MyPipSolar : public pipsolar::PipsolarComponent {
  public:
+  void set_time_component(time::RealTimeClock *time) { this->time_ = time; }
+
   void setup() override;
-  void send_set_datetime();
+  void loop() override;
+
+ protected:
+  time::RealTimeClock *time_{nullptr};
+  bool time_synchronized_{false};
+
+  void sync_time_if_needed();
 };
 
-}  // namespace pipsolar
+}  // namespace mypipsolar
 }  // namespace esphome
