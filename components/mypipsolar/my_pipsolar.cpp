@@ -1,33 +1,48 @@
-#include "my_pipsolar.h"
+#include "mypipsolar.h"
 #include "esphome/core/log.h"
+#include "esphome/core/helpers.h"
 
 namespace esphome {
-namespace pipsolar {
+namespace mypipsolar {
 
-static const char *const TAG = "my_pipsolar";
+static const char *const TAG = "mypipsolar";
 
 void MyPipSolar::setup() {
-  PipSolar::setup();
-  this->set_timeout("set_time", 5000, [this]() { this->send_set_datetime(); });
+  ESP_LOGI(TAG, "MyPipSolar setup");
+  pipsolar::Pipsolar::setup();  // викликаємо базовий setup
 }
 
-void MyPipSolar::send_set_datetime() {
-  auto *time = esphome::rtc::global_time;
-  if (time == nullptr || !time->now().is_valid()) {
-    ESP_LOGW(TAG, "Немає дійсного часу для встановлення.");
+void MyPipSolar::loop() {
+  pipsolar::Pipsolar::loop();  // викликаємо базовий loop
+}
+
+void MyPipSolar::sync_time() {
+  if (!this->rtc_) {
+    ESP_LOGW(TAG, "RTC (time component) not available");
     return;
   }
-  auto now = time->now();
+
+  auto now = this->rtc_->now();
+
+  if (!now.is_valid()) {
+    ESP_LOGW(TAG, "Time not valid");
+    return;
+  }
+
+  // Формуємо рядок DAT<YYMMDDHHMMSS>
   char buffer[32];
-  snprintf(buffer, sizeof(buffer), "DAT<%02d%02d%02d%02d%02d%02d\r",
+  snprintf(buffer, sizeof(buffer), "DAT<%02d%02d%02d%02d%02d%02d>\r",
            now.year % 100, now.month, now.day,
            now.hour, now.minute, now.second);
 
-  std::string command(buffer);
-  ESP_LOGI(TAG, "Встановлення часу: %s", command.c_str());
+  ESP_LOGI(TAG, "Sending time sync command: %s", buffer);
 
-  this->write_bytes(std::vector<uint8_t>(command.begin(), command.end()));
+  // Надсилаємо через UART
+  this->write_str(buffer, true);  // true = flush UART буфер
+
+  // Опційно: якщо потрібно дочекатися відповіді — можна реалізувати тут
+  // наприклад: this->expect_response("ACK", timeout);
 }
 
-}  // namespace pipsolar
+}  // namespace mypipsolar
 }  // namespace esphome
