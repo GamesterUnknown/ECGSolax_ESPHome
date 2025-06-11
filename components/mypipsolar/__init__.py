@@ -2,6 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import pipsolar, uart, time as time_component
 from esphome.const import CONF_ID
+from esphome.components.pipsolar import PipsolarComponent
 
 DEPENDENCIES = ["uart", "pipsolar"]
 CODEOWNERS = ["@GamesterUnknown"]
@@ -12,7 +13,7 @@ CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
 CONF_TIME_ID = "time_id"
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-PipsolarComponent = cg.global_ns.namespace("pipsolar").class_("Pipsolar", cg.Component)
+# PipsolarComponent = cg.global_ns.namespace("pipsolar").class_("Pipsolar", cg.Component)
 MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
 
 CONFIG_SCHEMA = cv.Schema(
