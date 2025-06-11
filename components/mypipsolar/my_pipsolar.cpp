@@ -1,4 +1,4 @@
-#include "mypipsolar.h"
+#include "my_pipsolar.h"
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
 
