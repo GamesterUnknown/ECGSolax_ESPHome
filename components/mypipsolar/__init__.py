@@ -21,9 +21,9 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
-    await uart.register_uart_device(var, config)
+    yield cg.register_component(var, config)
+    yield uart.register_uart_device(var, config)
 
     if CONF_TIME_ID in config:
-        time_var = await cg.get_variable(config[CONF_TIME_ID])
+        time_var = yield cg.get_variable(config[CONF_TIME_ID])
         cg.add(var.set_time_component(time_var))
