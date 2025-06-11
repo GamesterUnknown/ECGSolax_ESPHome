@@ -18,12 +18,12 @@ void MyPipSolar::loop() {
 }
 
 void MyPipSolar::sync_time() {
-  if (!this->rtc_) {
+  if (!this->time_) {
     ESP_LOGW(TAG, "RTC (time component) not available");
     return;
   }
 
-  auto now = this->rtc_->now();
+  auto now = this->time_->now();
 
   if (!now.is_valid()) {
     ESP_LOGW(TAG, "Time not valid");
@@ -39,7 +39,7 @@ void MyPipSolar::sync_time() {
   ESP_LOGI(TAG, "Sending time sync command: %s", buffer);
 
   // Надсилаємо через UART
-  this->write_str(buffer, true);  // true = flush UART буфер
+  //this->write_str(buffer);  // do not sent exact command to uart yeat
 
   // Опційно: якщо потрібно дочекатися відповіді — можна реалізувати тут
   // наприклад: this->expect_response("ACK", timeout);
