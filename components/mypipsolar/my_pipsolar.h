@@ -11,6 +11,7 @@ namespace mypipsolar {
 class MyPipSolar : public pipsolar::Pipsolar {
  public:
   void set_time_component(time::RealTimeClock *time) { this->time_ = time; }
+  void sync_time();
 
   void setup() override;
   void loop() override;
@@ -19,7 +20,7 @@ class MyPipSolar : public pipsolar::Pipsolar {
   time::RealTimeClock *time_{nullptr};
   bool time_synchronized_{false};
 
-  void sync_time();
+  
 };
 
 }  // namespace mypipsolar
