@@ -4,7 +4,7 @@ from esphome.components import uart, time as time_component, pipsolar
 from esphome.const import CONF_ID
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-MyPipSolar = mypipsolar_ns.class_("MyPipSolar", pipsolar.Pipsolar)
+MyPipSolar = mypipsolar_ns.class_("MyPipSolar", cg.Component)
 
 CONF_TIME_ID = "time_id"
 
