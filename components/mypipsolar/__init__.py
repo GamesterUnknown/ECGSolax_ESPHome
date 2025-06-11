@@ -9,10 +9,11 @@ AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "sele
 MULTI_CONF = True
 
 CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
+CONF_TIME_ID = "time_id"
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-PipsolarBase = cg.global_ns.namespace("pipsolar").class_("Pipsolar", cg.Component)
-MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarBase)
+PipsolarComponent = cg.global_ns.namespace("pipsolar").class_("Pipsolar", cg.Component)
+MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -27,7 +28,7 @@ def to_code(config):
     yield cg.register_component(var, config)
     yield uart.register_uart_device(var, config)
 
-    if "time_id" in config:
+    if CONF_TIME_ID in config:
         time_ = yield cg.get_variable(config["time_id"])
         cg.add(var.set_time_component(time_))
 
