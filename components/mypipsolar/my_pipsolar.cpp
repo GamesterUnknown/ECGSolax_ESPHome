@@ -33,7 +33,7 @@ void MyPipSolar::sync_time() {
   // Формуємо рядок DAT<YYMMDDHHMMSS>
   char buffer[32];
   snprintf(buffer, sizeof(buffer), "DAT<%02d%02d%02d%02d%02d%02d>\r",
-           now.year % 100, now.month, now.day,
+           now.year % 100, now.month, now.day_of_month,
            now.hour, now.minute, now.second);
 
   ESP_LOGI(TAG, "Sending time sync command: %s", buffer);
