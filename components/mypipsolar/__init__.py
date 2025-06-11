@@ -1,11 +1,12 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import uart, time as time_component, pipsolar
+from esphome.components import uart, time
 from esphome.const import CONF_ID
 
-mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-MyPipSolar = mypipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
+mypipsolar_ns = cg.esphome_ns.namespace('mypipsolar')
+pipsolar_ns = cg.esphome_ns.namespace('pipsolar')
 
+MyPipSolar = mypipsolar_ns.class_('MyPipSolar', pipsolar_ns.PipsolarComponent)
 CONF_TIME_ID = "time_id"
 
 # Беремо базову схему з pipsolar та розширюємо її додатковим параметром time_id
