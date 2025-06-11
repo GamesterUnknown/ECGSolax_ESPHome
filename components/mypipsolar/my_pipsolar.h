@@ -2,6 +2,7 @@
 
 #include "esphome.h"
 #include "esphome/components/time/real_time_clock.h"
+#include "esphome/components/pipsolar/pipsolar.h"
 
 
 namespace esphome {
