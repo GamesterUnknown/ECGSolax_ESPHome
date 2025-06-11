@@ -1,23 +1,22 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import uart, time as time_component
+from esphome.components import uart, time as time_component, pipsolar
 from esphome.const import CONF_ID
 
-pipsolar_ns = cg.esphome_ns.namespace('pipsolar')
-Pipsolar = pipsolar_ns.class_('Pipsolar')
+mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
+MyPipSolar = mypipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
 
-mypipsolar_ns = cg.esphome_ns.namespace('mypipsolar')
-MyPipSolar = mypipsolar_ns.class_('MyPipSolar', Pipsolar)
+CONF_TIME_ID = "time_id"
 
-CONF_TIME_ID = 'time_id'
+# Беремо базову схему з pipsolar та розширюємо її додатковим параметром time_id
+PARENT_SCHEMA = cv.Schema({cv.GenerateID(): cv.declare_id(pipsolar.PipsolarComponent)})\
+    .extend(cv.polling_component_schema("1s"))\
+    .extend(uart.UART_DEVICE_SCHEMA)
 
-CONFIG_SCHEMA = (
-    cv.Schema({
-        cv.GenerateID(): cv.declare_id(MyPipSolar),
+CONFIG_SCHEMA = cv.All(
+    PARENT_SCHEMA.extend({
         cv.Optional(CONF_TIME_ID): cv.use_id(time_component.RealTimeClock),
     })
-    .extend(cv.polling_component_schema('1s'))
-    .extend(uart.UART_DEVICE_SCHEMA)
 )
 
 async def to_code(config):
