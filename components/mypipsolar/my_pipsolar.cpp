@@ -10,11 +10,16 @@ static const char *const TAG = "mypipsolar";
 
 void MyPipSolar::setup() {
   ESP_LOGI(TAG, "MyPipSolar setup");
-  Pipsolar::setup();  // викликаємо базовий setup
+  Pipsolar::setup();  
 }
 
 void MyPipSolar::loop() {
-  Pipsolar::loop();  // викликаємо базовий loop
+  Pipsolar::loop();  
+}
+
+void MyPipsolar::update() {
+  Pipsolar::update();  
+  
 }
 
 void MyPipSolar::sync_time() {
