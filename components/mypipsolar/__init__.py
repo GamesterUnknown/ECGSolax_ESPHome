@@ -15,7 +15,12 @@ CONF_TIME_ID = "time_id"
 
 pipsolar_ns = cg.esphome_ns.namespace("pipsolar")
 MyPipsolarComponent = pipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
-pipsolar.PipsolarComponent = MyPipsolarComponent
+
+PIPSOLAR_COMPONENT_SCHEMA = cv.Schema(
+    {
+        cv.Required(CONF_PIPSOLAR_ID): cv.use_id(MyPipsolarComponent),
+    }
+)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
