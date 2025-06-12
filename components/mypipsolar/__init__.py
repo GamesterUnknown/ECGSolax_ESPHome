@@ -8,13 +8,14 @@ from esphome.components.pipsolar import CONFIG_SCHEMA
 CODEOWNERS = ["@GamesterUnknown"]
 #AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
 #MULTI_CONF = True
+AUTO_LOAD = ["pipsolar"]
 
 #CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
 CONF_TIME_ID = "time_id"
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-# PipsolarComponent = cg.global_ns.namespace("pipsolar").class_("Pipsolar", cg.Component)
-MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
+# MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
+#PipsolarComponent = pipsolar_ns.class_("Pipsolar", cg.Component)
 
 #CONFIG_SCHEMA = cv.Schema(
 #    {
