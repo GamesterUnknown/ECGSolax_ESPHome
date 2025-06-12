@@ -17,20 +17,20 @@ mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
 MyPipsolarComponent = mypipsolar_ns.class_("MyPipSolar", cg.Component)
 #PipsolarComponent = pipsolar_ns.class_("Pipsolar", cg.Component)
 
-#CONFIG_SCHEMA = cv.Schema(
-#    {
-#        cv.GenerateID(): cv.declare_id(MyPipsolarComponent),
-#        cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
-#    }
-#).extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
-
-CONFIG_SCHEMA = cv.All(
-    pipsolar.CONFIG_SCHEMA,
-    cv.Schema({
+CONFIG_SCHEMA = cv.Schema(
+    {
         cv.GenerateID(): cv.declare_id(MyPipsolarComponent),
         cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
-    })
-)
+    }
+).extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
+
+#CONFIG_SCHEMA = cv.All(
+#    pipsolar.CONFIG_SCHEMA,
+#    cv.Schema({
+#        cv.GenerateID(): cv.declare_id(MyPipsolarComponent),
+#        cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
+#    })
+#)
 
 
 def to_code(config):
