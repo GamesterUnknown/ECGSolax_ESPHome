@@ -3,7 +3,7 @@ import esphome.config_validation as cv
 from esphome.components import pipsolar, uart, time as time_component
 from esphome.const import CONF_ID
 from esphome.components.pipsolar import PipsolarComponent
-from esphome.components.pipsolar import PIPSOLAR_COMPONENT_SCHEMA
+from esphome.components.pipsolar import CONFIG_SCHEMA
 #DEPENDENCIES = ["uart"]
 CODEOWNERS = ["@GamesterUnknown"]
 #AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
@@ -23,7 +23,7 @@ MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
 #    }
 #).extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
 
-CONFIG_SCHEMA = pipsolar.PIPSOLAR_COMPONENT_SCHEMA.extend({
+CONFIG_SCHEMA = pipsolar.CONFIG_SCHEMA.extend({
     cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
 })
 
