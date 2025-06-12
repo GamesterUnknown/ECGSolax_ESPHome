@@ -22,7 +22,8 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(MyPipsolarComponent),
         cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
     }
-).extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
+).extend(pipsolar.CONFIG_SCHEMA)
+#.extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
 
 #CONFIG_SCHEMA = cv.All(
 #    pipsolar.CONFIG_SCHEMA,
