@@ -23,9 +23,13 @@ MyPipSolar = mypipsolar_ns.class_("MyPipSolar", PipsolarComponent)
 #    }
 #).extend(cv.polling_component_schema("1s")).extend(uart.UART_DEVICE_SCHEMA)
 
-CONFIG_SCHEMA = pipsolar.CONFIG_SCHEMA.extend({
-    cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
-})
+CONFIG_SCHEMA = cv.All(
+    pipsolar.CONFIG_SCHEMA,
+    cv.Schema({
+        cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
+    })
+)
+
 
 def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
