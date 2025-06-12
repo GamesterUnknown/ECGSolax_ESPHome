@@ -17,7 +17,7 @@ void MyPipSolar::loop() {
   Pipsolar::loop();  
 }
 
-void MyPipsolar::update() {
+void MyPipSolar::update() {
   Pipsolar::update();  
   
 }
