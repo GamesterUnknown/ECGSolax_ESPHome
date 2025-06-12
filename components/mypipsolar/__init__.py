@@ -12,6 +12,7 @@ CODEOWNERS = ["@GamesterUnknown"]
 
 #CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
 CONF_TIME_ID = "time_id"
+CONF_PIPSOLAR_ID = "pipsolar_id"
 
 pipsolar_ns = cg.esphome_ns.namespace("pipsolar")
 MyPipsolarComponent = pipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
