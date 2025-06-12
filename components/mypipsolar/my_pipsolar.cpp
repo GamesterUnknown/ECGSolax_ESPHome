@@ -4,7 +4,7 @@
 #include "esphome/components/pipsolar/pipsolar.h"
 
 namespace esphome {
-namespace mypipsolar {
+namespace pipsolar {
 
 static const char *const TAG = "mypipsolar";
 
@@ -45,5 +45,5 @@ void MyPipSolar::sync_time() {
   // наприклад: this->expect_response("ACK", timeout);
 }
 
-}  // namespace mypipsolar
+}  // namespace pipsolar
 }  // namespace esphome
