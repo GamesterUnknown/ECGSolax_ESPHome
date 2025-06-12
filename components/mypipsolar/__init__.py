@@ -8,7 +8,7 @@ from esphome.components.pipsolar import CONFIG_SCHEMA
 CODEOWNERS = ["@GamesterUnknown"]
 #AUTO_LOAD = ["binary_sensor", "text_sensor", "sensor", "switch", "output", "select"]
 #MULTI_CONF = True
-AUTO_LOAD = ["pipsolar"]
+#AUTO_LOAD = ["pipsolar"]
 
 #CONF_MY_PIPSOLAR_ID = "my_pipsolar_id"
 CONF_TIME_ID = "time_id"
