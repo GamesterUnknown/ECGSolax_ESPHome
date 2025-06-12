@@ -14,7 +14,7 @@ CODEOWNERS = ["@GamesterUnknown"]
 CONF_TIME_ID = "time_id"
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-MyPipsolarComponent = mypipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
+MyPipsolarComponent = pipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
 #PipsolarComponent = pipsolar_ns.class_("Pipsolar", cg.Component)
 
 CONFIG_SCHEMA = cv.All(
@@ -23,7 +23,7 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional("time_id"): cv.use_id(time_component.RealTimeClock),
     })
     .extend(cv.polling_component_schema("1s"))
-#    .extend(uart.UART_DEVICE_SCHEMA)
+    .extend(uart.UART_DEVICE_SCHEMA)
 )
 
 #CONFIG_SCHEMA = cv.Schema(
