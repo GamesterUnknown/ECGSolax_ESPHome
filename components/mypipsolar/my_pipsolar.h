@@ -6,7 +6,7 @@
 
 
 namespace esphome {
-namespace mypipsolar {
+namespace pipsolar {
 
 class MyPipSolar : public pipsolar::Pipsolar {
  public:
@@ -23,5 +23,5 @@ class MyPipSolar : public pipsolar::Pipsolar {
   
 };
 
-}  // namespace mypipsolar
+}  // namespace pipsolar
 }  // namespace esphome
