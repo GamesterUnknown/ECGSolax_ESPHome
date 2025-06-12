@@ -15,6 +15,7 @@ class MyPipSolar : public pipsolar::Pipsolar {
 
   void setup() override;
   void loop() override;
+  void update() override;
 
  protected:
   time::RealTimeClock *time_{nullptr};
