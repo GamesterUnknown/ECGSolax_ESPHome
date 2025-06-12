@@ -14,7 +14,7 @@ AUTO_LOAD = ["pipsolar"]
 CONF_TIME_ID = "time_id"
 
 mypipsolar_ns = cg.esphome_ns.namespace("mypipsolar")
-MyPipsolarComponent = mypipsolar_ns.class_("MyPipSolar", cg.Component)
+MyPipsolarComponent = mypipsolar_ns.class_("MyPipSolar", pipsolar.PipsolarComponent)
 #PipsolarComponent = pipsolar_ns.class_("Pipsolar", cg.Component)
 
 CONFIG_SCHEMA = cv.Schema(
