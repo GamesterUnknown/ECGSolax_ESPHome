@@ -31,11 +31,11 @@ esphome:
   #  - "helpers"
   project:
     name: "esphome.ECGSolax_Invertor"
-    version: 1.0.0
+    version: 1.1.0
 
-#external_components:
-# - source: github://syssi/esphome-pipsolar@pip8048
-#   refresh: 0s
+external_components:
+ - source: github://GamesterUnknown/esphome-pipsolar@pip8048
+   components: [pipsolar]
 
 esp32:
   board: esp32dev
@@ -44,9 +44,8 @@ esp32:
 
 # Enable Home Assistant API
 api:
-  encryption:
+  encryption:   
     key: !secret api_encryption_key
-
 ota:
  - platform: esphome
    password: !secret ota_password
@@ -80,13 +79,17 @@ packages:
 logger:
   id: uart_logger
   baud_rate: 0
-  level: DEBUG #VERBOSE
+  level:  DEBUG #VERBOSE
   # logs:
   #   component: ERROR # Fix for issue #4717 "Component xxxxxx took a long time for an operation"
 
 time:
   - platform: homeassistant
     id: hass_time
+#    on_time_sync:
+#      then:
+#       - lambda: |-
+#            id(inverter0).sync_time();
 
 web_server:
  port: 80
@@ -119,6 +122,20 @@ uart:
      sequence:
       - lambda: UARTDebug::log_string(direction, bytes);
  
+text:
+  - platform: template
+    mode: text
+    id: custom_command_input
+    name: "Custom PIP Command"
+    optimistic: true  
+
+button:
+  - platform: template
+    name: "Send Custom PIP Command"
+    on_press:
+      then:
+        - lambda: |-
+            id(inverter0)->switch_command(id(custom_command_input).state);
 
 
 modbus:
@@ -129,7 +146,11 @@ modbus:
 pipsolar:
   uart_id: uart_inverter
   id: inverter0
-
+  
+#mypipsolar:
+#  uart_id: uart_inverter
+#  id: inverter0
+#  time_id: hass_time
 
 modbus_controller: 
   - id: pzem
@@ -144,6 +165,7 @@ modbus_controller:
     setup_priority: -10
     offline_skip_updates: 100
     update_interval: ${pzem_update_interval}
+
 
 sensor:
   - platform: pzemac
@@ -211,8 +233,10 @@ sensor:
 #      name: "${node_name} grid_rating_current"
     ac_output_rating_voltage:
       name: "Target Output Voltage"
+      entity_category: "diagnostic"
     ac_output_rating_frequency:
       name: "Target Output Frequency"
+      entity_category: "diagnostic"
 #    ac_output_rating_current:
 #      name: "${node_name} ac_output_rating_current"
 #    ac_output_rating_apparent_power:
@@ -223,55 +247,55 @@ sensor:
 #      name: "${node_name} battery_rating_voltage"
     battery_recharge_voltage:
       name: "Back To Utility Source Voltage"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     battery_under_voltage:
       name: "Low CutOff Voltage"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     battery_bulk_voltage:
       name: "Bulk Charging Voltage"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     battery_float_voltage:
       name: "Floating Charging Voltage"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     battery_type:
-      name: "${node_name} battery_type"
-      entity_category: diagnostic
+      name: "Battery Type"
+      entity_category: "diagnostic"     
     current_max_ac_charging_current:
       name: "Max Utility Charging Current"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     current_max_charging_current:
       name: "Max Total Charging Current"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     input_voltage_range:
       name: "AC Input Voltage Range"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     output_source_priority:
       name: "Output Source Priority"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     charger_source_priority:
       name: "Charger Source Priority"
-      entity_category: diagnostic
-    parallel_max_num:
-      name: "${node_name} parallel_max_num"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
+#    parallel_max_num:
+#      name: "${node_name} parallel_max_num"
+#      entity_category: "diagnostic"
     machine_type:
       name: "${node_name} machine_type"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     topology:
       name: "${node_name} topology"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     output_mode:
       name: "${node_name} output_mode"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     battery_redischarge_voltage:
       name: "Back To Battery Source Voltage"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     pv_ok_condition_for_parallel:
       name: "${node_name} pv_ok_condition_for_parallel"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
     pv_power_balance:
       name: "${node_name} pv_power_balance"
-      entity_category: diagnostic
+      entity_category: "diagnostic"
 
     # QPIGS
     grid_voltage:
@@ -325,26 +349,27 @@ sensor:
       state_class: measurement
     inverter_heat_sink_temperature:
       name: "Temperature"
-    pv_input_current_for_battery:
+#    pv_input_current_for_battery:
+    pv1_input_current:
       name: "PV Current"
       device_class: current
       state_class: measurement
-    pv_input_voltage:
+    pv1_input_voltage:
       name: "PV Voltage"
       device_class: voltage
       state_class: measurement
-    battery_voltage_scc:
-      name: "!Battery Voltage SCC"
+#    battery_voltage_scc:
+#      name: "!Battery Voltage SCC"
     battery_discharge_current:
       name: "Battery Discharge Current"
       device_class: current
       state_class: measurement
       id: battery_discharge_current
-    battery_voltage_offset_for_fans_on:
-      name: "!Battery Voltage offset for fans on"
+#    battery_voltage_offset_for_fans_on:
+#      name: "!Battery Voltage offset for fans on"
 #    eeprom_version:
 #      name: "!eeprom_version"
-    pv_charging_power:
+    pv1_charging_power:
       name: "PV Power"
       device_class: power
       state_class: measurement
@@ -411,6 +436,10 @@ text_sensor:
           - B -> Battery mode
           - F -> Fault mode
           - D -> Shutdown mode
+    last_custom_command:
+      name: "Custom Command response"    
+#    last_qt:
+#      name: "Date-Time" 
 #    last_qpigs:
 #      name: "${node_name} last_qpigs"
 #    last_qpiri:
@@ -420,26 +449,32 @@ text_sensor:
 #    last_qflag:
 #      name: "${node_name} last_qflag"
 
+
+  - platform: homeassistant
+    name: "Custom PIP Command from HA"
+    id: custom_command_input_ha
+    entity_id: input_text.custom_pip_command
+
 binary_sensor:
   - platform: pipsolar
     pipsolar_id: inverter0
-    add_sbu_priority_version:
-      name: "!add_sbu_priority_version"
-    configuration_status:
-      name: "!Configuration Status"
+#    add_sbu_priority_version:
+#      name: "!add_sbu_priority_version"
+#    configuration_status:
+#      name: "!Configuration Status"
 #    scc_firmware_version:
 #      name: "${node_name} scc_firmware_version"
     load_status:
       name: "Load Enabled"
       entity_category: diagnostic
-    battery_voltage_to_steady_while_charging:
-      name: "!battery_voltage_to_steady_while_charging"
-      entity_category: diagnostic
+#    battery_voltage_to_steady_while_charging:
+#      name: "!battery_voltage_to_steady_while_charging"
+#      entity_category: diagnostic
     charging_status:
       name: "Charger Status"
       entity_category: diagnostic
     scc_charging_status:
-      name: "!SCC Charging Status"
+      name: "PV Charging Status"
       entity_category: diagnostic
     ac_charging_status:
       name: "AC Charging Status"
@@ -479,19 +514,26 @@ binary_sensor:
       entity_category: diagnostic
 
 switch:
+  - platform: restart
+    name: "Invertor Restart"
+    entity_category: config
+
   - platform: pipsolar
     pipsolar_id: inverter0
+#sending POP00 command which is SUB for ECGSolax
     output_source_priority_utility:
-      name: "${node_name} output_source_priority_utility"
+      name: "Solar Utility Battery (SUB)"
       entity_category: config
+#sending POP01 command which is SBU for ECGSolax
     output_source_priority_solar:
-      name: "${node_name} output_source_priority_solar"
+      name: "Solar Battery Utility (SBU)"
       entity_category: config
-    output_source_priority_battery:
-      name: "${node_name} output_source_priority_battery"
-      entity_category: config
+#sending POP02 command which is not accepted by ECGSolax
+#    output_source_priority_battery:
+#      name: "${node_name} output_source_priority_battery"
+#      entity_category: config
     input_voltage_range:
-      name: "${node_name} input_voltage_range"
+      name: "Menu 03: AC Input Voltage (OFF: Appliance, ON: UPS)"
       entity_category: config
     pv_ok_condition_for_parallel:
       name: "${node_name} pv_ok_condition_for_parallel"
@@ -499,10 +541,107 @@ switch:
     pv_power_balance:
       name: "${node_name} pv_power_balance"
       entity_category: config
-
-output:
+      
+select:
   - platform: pipsolar
     pipsolar_id: inverter0
-    battery_recharge_voltage:
-      id: inverter0_battery_recharge_voltage
-      possible_values: [44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0]
+    output_source_priority:
+      id: output_source_priority_select
+      name: "Menu 01: Output Source Priority"
+      entity_category: config
+      optionsmap:
+        "Solar Utility Battery (SUB)": "POP00"
+        "Solar Battery Utility (SBU)": "POP01"
+      statusmap:
+        "0": "Solar Utility Battery (SUB)"
+        "1": "Solar Battery Utility (SBU)"
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    charger_source_priority:
+      name: "Menu 16: Charger Source Priority"
+      entity_category: config
+      optionsmap:
+#        "Utility first": "PCP00" #Utility first mode not available for ECGSolax 
+        "Solar first": "PCP00"
+        "Solar and utility": "PCP01"
+        "Solar only": "PCP02"
+      statusmap:
+#        "0": "Utility first"
+        "0": "Solar first"
+        "1": "Solar and utility"
+        "2": "Solar only"
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    current_max_ac_charging_current:
+      name: "Menu 11: Max Utility Charge Current"
+      entity_category: config
+      optionsmap:
+        "2A": "MUCHGC0002"
+        "10A": "MUCHGC0010"
+        "20A": "MUCHGC020"
+        "30A": "MUCHGC030"
+        "40A": "MUCHGC0040"
+        "50A": "MUCHGC0050"
+        "60A": "MUCHGC0060"
+        "70A": "MUCHGC0070"
+        "80A": "MUCHGC0080"
+        "90A": "MUCHGC0090"
+        "100A": "MUCHGC0100"
+        #"110A": "MUCHGC0110"
+        #"120A": "MUCHGC0120"
+      statusmap:
+        "2": "2A"
+        "10": "10A"
+        "20": "20A"
+        "30": "30A"
+        "40": "40A"
+        "50": "50A"
+        "60": "60A"
+        "70": "70A"
+        "80": "80A"
+        "90": "90A"
+        "100": "100A"
+        #"110": "110A"
+        #"120": "120A"
+
+  - platform: pipsolar
+    pipsolar_id: inverter0
+    current_max_charging_current:
+      name: "Menu 02: Max Total Charge Current"
+      entity_category: config
+      optionsmap:
+        "10A": "MCHGC0010"
+        "20A": "MCHGC0020"
+        "30A": "MCHGC0030"
+        "40A": "MCHGC0040"
+        "50A": "MCHGC0050"
+        "60A": "MCHGC0060"
+        "70A": "MCHGC0070"
+        "80A": "MCHGC0080"
+        "90A": "MCHGC0090"
+        "100A": "MCHGC100"
+        "110A": "MCHGC110"
+        "120A": "MCHGC120"
+      statusmap:
+        "10": "10A"
+        "20": "20A"
+        "30": "30A"
+        "40": "40A"
+        "50": "50A"
+        "60": "60A"
+        "70": "70A"
+        "80": "80A"
+        "90": "90A"
+        "100": "100A"
+        "110": "110A"
+        "120": "120A"
+
+#output:
+#  - platform: mypipsolar
+#    pipsolar_id: inverter0
+#    battery_recharge_voltage:
+#      id: inverter0_battery_recharge_voltage
+#      possible_values: [44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0]
+
