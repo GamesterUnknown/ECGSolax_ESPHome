@@ -1,5 +1,5 @@
 # ECGSolax_ESPHome
-ESPHome example configuration to monitor and control a ECGSolax 6.2kWt inverter via RS232.
+ESPHome example configuration to monitor and control a ECGSolax /Datouboss 6.2kWt/11kWt inverter via RS232.
 
 This is updated version of https://github.com/syssi/esphome-pipsolar
 
