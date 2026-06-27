@@ -17,10 +17,20 @@ substitutions:
   pzem_rx_pin: GPIO3
   pzem_voltage_offset: "0"
   pzem_current_offset: "0"
-  update_interval: 10s # Minimum 10s recommended to avoid duplicate command errors
+  update_interval: 2s # Minimum 10s recommended to avoid duplicate command errors
   select_skip_updates: "6"
   read_skip_updates: "6"
   pzem_update_interval: 10s # Needs to be 1/5 of update interval because of smoothing filter on pzem readings
+
+  jk_name: Jk-bms
+  #external_components_source: github://syssi/esphome-jk-bms@main
+  #external_components_source1: https://github.com/syssi/esphome-jk-bms
+  # Please use "JK02_24S" if you own a old JK-BMS < hardware version 11.0 (hardware version >= 6.0 and < 11.0)
+  # Please use "JK02_32S" if you own a new JK-BMS >= hardware version 11.0 (f.e. JK-B2A8S20P hw 11.XW, sw 11.26)
+  # Please use "JK04" if you have some old JK-BMS <= hardware version 3.0 (f.e. JK-B2A16S hw 3.0, sw. 3.3.0)
+  protocol_version: JK02_32S
+
+
 
 esphome: 
   name: "${device_name}"
@@ -31,24 +41,45 @@ esphome:
   #  - "helpers"
   project:
     name: "esphome.ECGSolax_Invertor"
-    version: 1.1.0
+    version: 1.2.0
 
 external_components:
  - source: github://GamesterUnknown/esphome-pipsolar@pip8048
    components: [pipsolar]
+   refresh: 0s
+ - source: github://GamesterUnknown/ECGSolax_ESPHome@main
+   components: [mypipsolar]
+   refresh: 0s
 
+#external_components:
+#  - source:
+#      type: git
+#      url: ${external_components_source1}
+#      ref: main
+#  - source: ${external_components_source}
+#    refresh: 0s
+   
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
+    #version: recommended
+    #type: arduino
+
 
 # Enable Home Assistant API
 api:
-  encryption:   
+  encryption:
     key: !secret api_encryption_key
+
+
 ota:
  - platform: esphome
    password: !secret ota_password
+   on_begin:
+    then:
+      - switch.turn_off: ble_client_switch0
+      - logger.log: "BLE connection suspended for OTA update"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -65,6 +96,10 @@ packages:
   # You can replace next 2 lines with your common configs for all devices
  # common_system: !include includes/common_system.yaml
   common_sensors: !include includes/common_sensors.yaml
+  #jk_bms_v19: !include includes/esp32-ble-v19-example.yaml #BMS V19 sensors
+  jk_bms_v15: !include includes/esp32-ble-v15-example.yaml #BMS V15 sensors
+  pzem: !include includes/pzem.yaml # uncomment if use PZEM 004 module
+
 
 
 #For debug:
@@ -79,9 +114,12 @@ packages:
 logger:
   id: uart_logger
   baud_rate: 0
-  level:  DEBUG #VERBOSE
+  level:  DEBUG #INFO #WARN #DEBUG #VERBOSE
   # logs:
   #   component: ERROR # Fix for issue #4717 "Component xxxxxx took a long time for an operation"
+#  logs:
+#    esp32_ble_tracker: DEBUG #INFO
+#    esp32_ble_client: DEBUG #INFO
 
 time:
   - platform: homeassistant
@@ -98,18 +136,6 @@ web_server:
 
   
 uart:
-  - id: uart_pzem
-    baud_rate: 9600
-    tx_pin: ${pzem_tx_pin}
-    rx_pin: ${pzem_rx_pin}
-    debug:
-     direction: BOTH
-     dummy_receiver: false
-     after:
-      delimiter: "\n"
-     sequence:
-      - lambda: UARTDebug::log_string(direction, bytes);
-
   - id: uart_inverter
     baud_rate: 2400
     tx_pin: ${inverter_tx_pin}
@@ -129,19 +155,6 @@ text:
     name: "Custom PIP Command"
     optimistic: true  
 
-button:
-  - platform: template
-    name: "Send Custom PIP Command"
-    on_press:
-      then:
-        - lambda: |-
-            id(inverter0)->switch_command(id(custom_command_input).state);
-
-
-modbus:
-  - id: modbus_pzem
-    uart_id: uart_pzem
-    send_wait_time: 250ms
 
 pipsolar:
   uart_id: uart_inverter
@@ -152,78 +165,15 @@ pipsolar:
 #  id: inverter0
 #  time_id: hass_time
 
-modbus_controller: 
-  - id: pzem
-    # The current device address.
-    address: 0x02
-    # The special address 0xF8 is a broadcast address accepted by any pzem device,
-    # so if you use this address, make sure there is only one pzem device connected
-    # to the uart bus.
-    # address: 0xF8
-    modbus_id: modbus_pzem
-    command_throttle: 0ms
-    setup_priority: -10
-    offline_skip_updates: 100
-    update_interval: ${pzem_update_interval}
-
+button:
+  - platform: template
+    name: "Send Custom PIP Command"
+    on_press:
+      then:
+        - lambda: |-
+            id(inverter0)->switch_command(id(custom_command_input).state);
 
 sensor:
-  - platform: pzemac
-    modbus_id: modbus_pzem
-    voltage:
-      name: "Grid Voltage PZEM"
-      id: pzem_grid_voltage
-      #internal: true
-      #filters:
-      #  - &mafilter quantile:
-      #      window_size: 5
-      #      send_every: 1
-      #      send_first_at: 1
-      #      quantile: .9
-      #  - offset: ${pzem_voltage_offset}
-    current:
-      name: "Grid Current PZEM"
-      id: pzem_grid_current
-      #filters:
-      #  - *mafilter
-      #  - offset: ${pzem_current_offset}
-    power:
-      name: "Grid Power PZEM"
-      id: pzem_grid_power
-      #filters:
-      #  - *mafilter
-    power_factor:
-      name: "Grid Power Factor PZEM"
-      id: pzem_grid_power_factor
-      #filters:
-      #  - *mafilter
-    energy:
-      name: "Grid Energy PZEM"
-      id: pzem_grid_energy
-      #filters:
-      #  - *mafilter
-
-  - platform: template
-    name: "Grid Power VA PZEM"
-    unit_of_measurement: "W"
-    device_class: power
-    state_class: measurement
-    accuracy_decimals: 0
-    update_interval: ${pzem_update_interval}
-    lambda: |-
-      return id(pzem_grid_current).state * id(pzem_grid_voltage).state;
-
-  - platform: template
-    name: "Grid Power VA*PF PZEM"
-    unit_of_measurement: "W"
-    device_class: power
-    state_class: measurement
-    accuracy_decimals: 0
-    update_interval: ${pzem_update_interval}
-    lambda: |-
-      return id(pzem_grid_current).state * id(pzem_grid_voltage).state * id(pzem_grid_power_factor).state;
-
-
   - platform: pipsolar
     pipsolar_id: inverter0
     # QPIRI
@@ -423,6 +373,7 @@ sensor:
       }
       return id(load_power).state / id(load_Power_VA).state;
 
+
 text_sensor:
   - platform: pipsolar
     pipsolar_id: inverter0
@@ -448,7 +399,6 @@ text_sensor:
 #      name: "${node_name} last_qmod"
 #    last_qflag:
 #      name: "${node_name} last_qflag"
-
 
   - platform: homeassistant
     name: "Custom PIP Command from HA"
@@ -513,6 +463,8 @@ binary_sensor:
       name: "Record Fault Code"
       entity_category: diagnostic
 
+
+
 switch:
   - platform: restart
     name: "Invertor Restart"
@@ -541,7 +493,8 @@ switch:
     pv_power_balance:
       name: "${node_name} pv_power_balance"
       entity_category: config
-      
+
+
 select:
   - platform: pipsolar
     pipsolar_id: inverter0
@@ -644,4 +597,3 @@ select:
 #    battery_recharge_voltage:
 #      id: inverter0_battery_recharge_voltage
 #      possible_values: [44.0,45.0,46.0,47.0,48.0,49.0,50.0,51.0]
-
