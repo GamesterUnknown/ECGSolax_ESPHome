@@ -43,7 +43,7 @@ esphome:
   #  - "helpers"
   project:
     name: "esphome.ECGSolax_Invertor"
-    version: 1.2.0
+    version: 2.0.0
 
 external_components:
  - source: github://GamesterUnknown/esphome-pipsolar@pip8048
@@ -156,6 +156,13 @@ button:
             ESP_LOGW("clock_sync", "Cannot sync: System time is not valid yet!");
           }
 
+  - platform: template
+    name: "${inverter_name} Send Custom PIP Command"
+    on_press:
+      then:
+        - lambda: |-
+            id(inverter0)->switch_command(id(custom_command_input).state);
+
 captive_portal:
 
 packages:
@@ -187,13 +194,7 @@ logger:
 #    esp32_ble_tracker: DEBUG #INFO
 #    esp32_ble_client: DEBUG #INFO
 
-time:
-  - platform: homeassistant
-    id: hass_time
-#    on_time_sync:
-#      then:
-#       - lambda: |-
-#            id(inverter0).sync_time();
+
 
 web_server:
  port: 80
@@ -230,14 +231,6 @@ pipsolar:
 #  uart_id: uart_inverter
 #  id: inverter0
 #  time_id: hass_time
-
-button:
-  - platform: template
-    name: "${inverter_name} Send Custom PIP Command"
-    on_press:
-      then:
-        - lambda: |-
-            id(inverter0)->switch_command(id(custom_command_input).state);
 
 sensor:
   - platform: pipsolar
