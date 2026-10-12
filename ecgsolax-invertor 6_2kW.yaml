@@ -226,6 +226,7 @@ text:
 pipsolar:
   uart_id: uart_inverter
   id: inverter0
+  time_source: HGEN  # HGEN: reads datetime from HGEN response (avoids unsupported QT timeouts)
   
 #mypipsolar:
 #  uart_id: uart_inverter
@@ -782,6 +783,9 @@ binary_sensor:
 #    solar_feed_to_grid_status:
 #      name: "${inverter_name} Solar Feed To Grid Status"
 #      entity_category: diagnostic
+    solar_feed_to_grid:
+      name: "${inverter_name} Solar Feed To Grid Status"
+      entity_category: diagnostic
 
 
 
@@ -847,6 +851,9 @@ switch:
       entity_category: config
     power_saving:
       name: "${inverter_name} Power Saving Mode Switch"
+      entity_category: config
+    solar_feed_to_grid:
+      name: "${inverter_name} Solar Feed To Grid Switch"
       entity_category: config
 
 

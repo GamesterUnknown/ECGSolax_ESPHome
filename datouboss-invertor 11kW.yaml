@@ -224,6 +224,7 @@ text:
 pipsolar:
   uart_id: uart_inverter
   id: inverter0
+  time_source: HGEN  # HGEN: reads datetime from HGEN response (avoids unsupported QT timeouts)
   
 #mypipsolar:
 #  uart_id: uart_inverter
@@ -370,10 +371,11 @@ sensor:
       device_class: current
       state_class: measurement
       id: battery_discharge_current
-    pv2_input_current:
-      name: "${inverter_name} PV2 Input Current"
-    pv2_input_voltage:
-      name: "${inverter_name} PV2 Input Voltage"
+    # QPIGS2 sensors (deactivated: Datouboss uses HPVB for 2nd MPPT tracker)
+#    pv2_input_current:
+#      name: "${inverter_name} PV2 Input Current"
+#    pv2_input_voltage:
+#      name: "${inverter_name} PV2 Input Voltage"
     battery_voltage_scc:
       name: "${inverter_name} Battery Voltage SCC"
     battery_voltage_offset_for_fans_on:
@@ -384,8 +386,8 @@ sensor:
       name: "${inverter_name} PV Power"
       device_class: power
       state_class: measurement
-    pv2_charging_power:
-      name: "${inverter_name} PV2 Power"
+#    pv2_charging_power:
+#      name: "${inverter_name} PV2 Power"
 
     # HGEN
     pv_gen_current_day:
@@ -493,15 +495,23 @@ sensor:
 #    hbms2_min_cell_position:
 #      name: "${inverter_name} HBMS2 Min Cell Position"
 
-    # HPVB (HPVINV02 protocol - PV/Bus Telemetry)
-#    hpvb_pv_voltage:
-#      name: "${inverter_name} HPVB PV Voltage"
-#    hpvb_pv_current:
-#      name: "${inverter_name} HPVB PV Current"
-#    hpvb_pv_power:
-#      name: "${inverter_name} HPVB PV Power"
-#    hpvb_bus_voltage:
-#      name: "${inverter_name} HPVB Bus Voltage"
+    # HPVB (HPVINV02 protocol - PV2/MPPT2 Telemetry for 11kW dual-MPPT)
+    hpvb_pv_voltage:
+      name: "${inverter_name} PV2 Voltage"
+      device_class: voltage
+      state_class: measurement
+    hpvb_pv_current:
+      name: "${inverter_name} PV2 Current"
+      device_class: current
+      state_class: measurement
+    hpvb_pv_power:
+      name: "${inverter_name} PV2 Power"
+      device_class: power
+      state_class: measurement
+    hpvb_bus_voltage:
+      name: "${inverter_name} HPVB Bus Voltage"
+      device_class: voltage
+      state_class: measurement
 
     # QET
 #    total_pv_generated_energy:
@@ -780,6 +790,9 @@ binary_sensor:
 #    solar_feed_to_grid_status:
 #      name: "${inverter_name} Solar Feed To Grid Status"
 #      entity_category: diagnostic
+    solar_feed_to_grid:
+      name: "${inverter_name} Solar Feed To Grid Status"
+      entity_category: diagnostic
 
 
 
@@ -845,6 +858,9 @@ switch:
       entity_category: config
     power_saving:
       name: "${inverter_name} Power Saving Mode Switch"
+      entity_category: config
+    solar_feed_to_grid:
+      name: "${inverter_name} Solar Feed To Grid Switch"
       entity_category: config
 
 
