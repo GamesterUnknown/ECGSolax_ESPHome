@@ -366,18 +366,13 @@ sensor:
       name: "${inverter_name} PV Voltage"
       device_class: voltage
       state_class: measurement
+    battery_voltage_scc:
+      name: "${inverter_name} Battery Voltage SCC"
     battery_discharge_current:
       name: "${inverter_name} Battery Discharge Current"
       device_class: current
       state_class: measurement
       id: battery_discharge_current
-    # QPIGS2 sensors (deactivated: Datouboss uses HPVB for 2nd MPPT tracker)
-#    pv2_input_current:
-#      name: "${inverter_name} PV2 Input Current"
-#    pv2_input_voltage:
-#      name: "${inverter_name} PV2 Input Voltage"
-    battery_voltage_scc:
-      name: "${inverter_name} Battery Voltage SCC"
     battery_voltage_offset_for_fans_on:
       name: "${inverter_name} Battery Voltage Offset For Fans On"
 #    eeprom_version:
@@ -386,6 +381,12 @@ sensor:
       name: "${inverter_name} PV Power"
       device_class: power
       state_class: measurement
+
+    # QPIGS2 (deactivated: Datouboss uses HPVB for 2nd MPPT tracker)
+#    pv2_input_current:
+#      name: "${inverter_name} PV2 Input Current"
+#    pv2_input_voltage:
+#      name: "${inverter_name} PV2 Input Voltage"
 #    pv2_charging_power:
 #      name: "${inverter_name} PV2 Power"
 
@@ -652,6 +653,15 @@ sensor:
 text_sensor:
   - platform: pipsolar
     pipsolar_id: inverter0
+    # QPIRI
+#    last_qpiri:
+#     name: "${inverter_name} last_qpiri"
+
+    # QPIGS
+#    last_qpigs:
+#      name: "${inverter_name} ${inverter_name} last_qpigs"
+
+    # QMOD
     device_mode:
       name: "${inverter_name} Device Mode"
       filters:
@@ -662,10 +672,30 @@ text_sensor:
           - B -> Battery mode
           - F -> Fault mode
           - D -> Shutdown mode
-    last_custom_command:
-      name: "${inverter_name} Custom Command response"    
+#    last_qmod:
+#     name: "${inverter_name} last_qmod"
+
+    # QFLAG
+#    last_qflag:
+#     name: "${inverter_name} last_qflag"
+
+    # Date / Time (Read from HGEN or QT according to time_source)
+    current_data_time:
+      name: "${inverter_name} Current Date Time"
+      id: inverter_current_data_time
+    inverter_date:
+      name: "${inverter_name} Inverter Date"
+    inverter_time:
+      name: "${inverter_name} Inverter Time"
+    # QT (raw response)
+#    last_qt:
+#      name: "${inverter_name} Date-Time" 
+
+    # HGEN (Energy / Telemetry raw)
     last_hgen:
       name: "${inverter_name} Last HGEN"
+
+    # HPVINV02 protocol raw responses (HBMS1..3, HEEP2, HPVB)
 #    last_hbms1:
 #      name: "${inverter_name} Last HBMS1"
 #    last_hbms2:
@@ -676,42 +706,50 @@ text_sensor:
 #      name: "${inverter_name} Last HEEP2"
 #    last_hpvb:
 #      name: "${inverter_name} Last HPVB"
-    current_data_time:
-      name: "${inverter_name} Current Date Time"
-      id: inverter_current_data_time
-    inverter_date:
-      name: "${inverter_name} Inverter Date"
-    inverter_time:
-      name: "${inverter_name} Inverter Time"
-#    # QPGS0 - parallel inverter operation (raw response)
-#    last_qpgs0:
-#      name: "${inverter_name} last_qpgs0"
+
+    # QET / QLT
 #    last_qet:
 #      name: "${inverter_name} last_qet"
 #    last_qlt:
 #      name: "${inverter_name} last_qlt"
+
+    # QMCHGCR / QMUCHGCR
 #    last_qmchgcr:
 #      name: "${inverter_name} last_qmchgcr"
 #    last_qmuchgcr:
 #      name: "${inverter_name} last_qmuchgcr"
+
+    # Q1
 #    last_q1:
 #      name: "${inverter_name} last_q1"
-#    last_qbms:
-#      name: "${inverter_name} last_qbms"
-#    work_mode_0:
-#      name: "${inverter_name} work_mode_0"
 #    inverter_charge_status:
 #      name: "${inverter_name} inverter_charge_status"
-#    last_qt:
-#      name: "${inverter_name} Date-Time" 
-#    last_qpigs:
-#      name: "${inverter_name} ${inverter_name} last_qpigs"
-#    last_qpiri:
-#     name: "${inverter_name} last_qpiri"
-#    last_qmod:
-#     name: "${inverter_name} last_qmod"
-#    last_qflag:
-#     name: "${inverter_name} last_qflag"
+
+    # QBMS
+#    last_qbms:
+#      name: "${inverter_name} last_qbms"
+
+    # QPGS0 - parallel inverter operation (raw response)
+#    last_qpgs0:
+#      name: "${inverter_name} last_qpgs0"
+#    work_mode_0:
+#      name: "${inverter_name} work_mode_0"
+
+    # QMN (Model Name Inquiry)
+#    last_qmn:
+#      name: "${inverter_name} last_qmn"
+#    model_name:
+#      name: "${inverter_name} Model Name"
+
+    # QVFW (Main CPU Firmware Version Inquiry)
+#    last_qvfw:
+#      name: "${inverter_name} last_qvfw"
+#    main_cpu_firmware_version:
+#      name: "${inverter_name} Main CPU Firmware Version"
+
+    # Custom Command
+    last_custom_command:
+      name: "${inverter_name} Custom Command response"
 
   - platform: homeassistant
     name: "${inverter_name} Custom PIP Command from HA"
@@ -721,6 +759,7 @@ text_sensor:
 binary_sensor:
   - platform: pipsolar
     pipsolar_id: inverter0
+    # QPIGS status flags
 #    add_sbu_priority_version:
 #      name: "${inverter_name} !add_sbu_priority_version"
 #    configuration_status:
@@ -751,6 +790,8 @@ binary_sensor:
     dustproof_installed:
       name: "${inverter_name} !dustproof_installed"
       entity_category: diagnostic
+
+    # QFLAG flags
     silence_buzzer_open_buzzer:
       name: "${inverter_name} Alarm"
       entity_category: diagnostic
@@ -778,6 +819,11 @@ binary_sensor:
 #    warning_battery_weak:
 #      name: "${inverter_name} Warning Battery Weak"
 #      entity_category: diagnostic
+    solar_feed_to_grid:
+      name: "${inverter_name} Solar Feed To Grid Status"
+      entity_category: diagnostic
+
+    # QBATCD flags
 #    discharge_onoff:
 #      name: "${inverter_name} Discharge Enabled"
 #      entity_category: diagnostic
@@ -790,9 +836,6 @@ binary_sensor:
 #    solar_feed_to_grid_status:
 #      name: "${inverter_name} Solar Feed To Grid Status"
 #      entity_category: diagnostic
-    solar_feed_to_grid:
-      name: "${inverter_name} Solar Feed To Grid Status"
-      entity_category: diagnostic
 
 
 
@@ -811,6 +854,7 @@ switch:
 
   - platform: pipsolar
     pipsolar_id: inverter0
+    # QPIRI commands (POP00, POP01, PGR, PPVOKC, PSPB)
 #sending POP00 command which is SUB for ECGSolax
     output_source_priority_utility:
       name: "${inverter_name} Solar Utility Battery (SUB)"
@@ -832,6 +876,8 @@ switch:
     pv_power_balance:
       name: "${inverter_name} pv_power_balance"
       entity_category: config
+
+    # QFLAG control switches (PE<x> / PD<x>)
     buzzer:
       name: "${inverter_name} Buzzer (Beep)"
       entity_category: config
